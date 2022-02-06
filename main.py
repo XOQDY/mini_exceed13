@@ -5,14 +5,16 @@ from pymongo import MongoClient
 
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
-from typing import Optional
 from fastapi.encoders import jsonable_encoder
 
+from typing import Optional
+
 class Reservation(BaseModel):
-    name : str
+    name: str
     time: int
     table_number: int
-    
+
+
 client = MongoClient('mongodb://localhost', 27017)
 
 # TODO fill in database name
@@ -59,13 +61,26 @@ def get_reservation_by_table(table: int):
         }
 
 
+
 @app.post("/reservation")
-def reserve(reservation : Reservation):
-    pass
+def reserve(reservation: Reservation):
+    time = reservation.time
+    table_number = reservation.table_number
+    query = {"time": time, "table_number": table_number}
+    search = collection.find_one(query, {"_id": 0})
+    if search is not None:
+        raise HTTPException(status_code=404, detail={
+            "message": f"Unfortunately, table number {table_number} at {time} "
+                       f"already reserved so the new reservation will not allowed"})
+    m = jsonable_encoder(reservation)
+    collection.insert_one(m)
+    return {"message": f"You reservation table number {table_number} is success."}
+
 
 @app.put("/reservation/update/")
 def update_reservation(reservation: Reservation):
     pass
+
 
 @app.delete("/reservation/delete/{name}/{table_number}")
 def cancel_reservation(name: str, table_number : int):
@@ -74,4 +89,3 @@ def cancel_reservation(name: str, table_number : int):
     return {
         "result": "done."
     }
-

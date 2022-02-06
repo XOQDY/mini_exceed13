@@ -31,3 +31,4 @@ Use `put` method to update the specific reservation.
 
 **Conditions:**
 - Suppose that on you have a reservation on table number 6 at 12:00 PM and you want to change a time to 15:00 PM. Unfortunately, table number 6 at 15:00 PM already reserved so the new reservation will not allowed. 
+.
