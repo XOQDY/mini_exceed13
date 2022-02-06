@@ -51,7 +51,23 @@ def reserve(reservation : Reservation):
 
 @app.put("/reservation/update/")
 def update_reservation(reservation: Reservation):
-    pass
+    tquery = {"name": reservation.name}
+    ch = collection.find(tquery)
+    resc = []
+    for r in ch:
+        resc.append(r)
+    if len(resc)==0:
+        raise HTTPException(400,f"Couldn't find name:{reservation.name}")
+    time = reservation.time
+    table_number = reservation.table_number
+    query = {"time": time, "table_number": table_number}
+    search = collection.find_one(query, {"_id": 0})
+    if search is not None:
+        raise HTTPException(400,f"Table not available")
+    collection.update_many({"name":reservation.name},{"$set":{"table_number":reservation.table_number,"time":reservation.time}}) 
+    return {
+        "status": "updated success",
+    }
 
 @app.delete("/reservation/delete/{name}/{table_number}")
 def cancel_reservation(name: str, table_number : int):
